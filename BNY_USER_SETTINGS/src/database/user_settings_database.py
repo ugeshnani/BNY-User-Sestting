@@ -10,50 +10,83 @@ session = Session()
 
 class UserSettingDatabase:
 
-    def save_settings(self, user_settings):
+    @staticmethod
+    def save_settings(user_settings):
         try:
-            result = session.add(user_settings)
+            session.add(user_settings)
             session.commit()
-            return {"pdf1": "Success", "pdf2": result}
+            return {"Status": "Success", "Data": "settings saved successfully"}
         except Exception as e:
             print(e)
-            return {"pdf1": "Failure", "pdf2": "Error while saving the settings "}
+            session.rollback()
+            return {"Status": "Failure", "Data": "Error while saving the settings "}
 
-    def check_file_name(self, user_id, settings_type, file_name):
+    @staticmethod
+    def check_file_name(user_id, settings_type, file_name):
         try:
             new_file_name = file_name.replace(".csv", '')
             search = "%{}%".format(new_file_name)
-            print(new_file_name)
-            ealias = aliased(UserSettings)
             result = session.query(UserSettings).filter(UserSettings.user_id == user_id,
                                                         UserSettings.user_settings_type == settings_type,
-                                                        UserSettings.file_name.like(search)).\
+                                                        UserSettings.file_name.like(search)). \
                 order_by(desc(UserSettings.created_time)).first()
-            print(result)
-            return {"pdf1": "Success", "pdf2": result}
+            return {"Status": "Success", "Data": result}
         except Exception as e:
             print(e)
-            return {"pdf1": "Failure", "pdf2": "Error occurred while checking file name in database"}
+            session.rollback()
+            return {"Status": "Failure", "Data": "Error occurred while checking file name in database"}
 
-    def get_settings(self, user_id, settings_type):
+    @staticmethod
+    def get_settings(user_id, settings_type):
         try:
-            ealias = aliased(UserSettings)
-            result = session.query(ealias.content).filter(ealias.user_id == user_id). \
-                filter(ealias.user_settings_type == settings_type).order_by(desc(ealias.created_time)).first()
-            print(result)
-            return {"pdf1": "Success", "pdf2": result}
+            result = session.query(UserSettings.content).filter(UserSettings.user_id == user_id). \
+                filter(UserSettings.user_settings_type == settings_type)\
+                .order_by(desc(UserSettings.created_time)).first()
+            return {"Status": "Success", "Data": result}
         except Exception as e:
             print(e)
-            return {"pdf1": "Failure", "pdf2": "Error occurred while get settings from database"}
+            session.rollback()
+            return {"Status": "Failure", "Data": "Error occurred while get settings from database"}
 
-
-    def settings_history(self, user_id, settings_type):
+    @staticmethod
+    def settings_history(user_id, settings_type):
         try:
-            ealias = aliased(UserSettings)
-            result = session.query(ealias.file_name, ealias.created_time)\
-                .filter(ealias.user_id == user_id).filter(ealias.user_settings_type == settings_type).all()
-            print(result)
-            return {"pdf1": "Success", "pdf2": result}
+            result = session.query(UserSettings.file_name, UserSettings.created_time) \
+                .filter(UserSettings.user_id == user_id).filter(UserSettings.user_settings_type == settings_type).all()
+            return {"Status": "Success", "Data": result}
         except Exception as e:
             print(e)
-            return {"pdf1": "Failure", "pdf2": "Error occurred while getting settings history from database"}
+            session.rollback()
+            return {"Status": "Failure", "Data": "Error occurred while getting settings history from database"}
+
+    @staticmethod
+    def check_user_id_type(user_id, settings_type):
+        try:
+            if settings_type == '':
+                result = session.query(UserSettings).filter(UserSettings.user_id == user_id).all()
+                print("Printing in check user_id and type")
+                print(result)
+                print(user_id)
+                return {"Status": "Success", "Data": result}
+
+            else:
+                result = session.query(UserSettings) \
+                    .filter(UserSettings.user_id == user_id)\
+                    .filter(UserSettings.user_settings_type == settings_type).all()
+                return {"Status": "Success", "Data": result}
+        except Exception as e:
+            print(e)
+            session.rollback()
+            return {"Status": "Failure", "Data": "Error occurred while check userId & type from database"}
+
+    @staticmethod
+    def get_settings_list(user_id):
+        try:
+            result = session.query(UserSettings.user_id, UserSettings.user_settings_type,
+                                   UserSettings.file_name, UserSettings.created_time) \
+                                    .filter(UserSettings.user_id == user_id).all()
+            return {"Status": "Success", "Data": result}
+        except Exception as e:
+            print(e)
+            session.rollback()
+            return {"Status": "Failure", "Data": "Error occurred in get_settings_list from database"}

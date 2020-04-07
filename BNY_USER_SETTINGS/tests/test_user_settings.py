@@ -1,7 +1,4 @@
-import configparser
 import pytest
-import os
-from src.services.ESGservice import DataMapper
 from src.services.user_setting_services import UserSettingService
 
 
@@ -22,7 +19,7 @@ from src.services.user_setting_services import UserSettingService
 def test_save_settings(test_input1, test_input2, test_input3, expected):
     user_settings = UserSettingService()
     result = user_settings.save_settings(test_input1, test_input2, test_input3)
-    assert result['pdf1'] == expected
+    assert result['Status'] == expected
 
 
 @pytest.mark.parametrize("test_input1,test_input2,expected",
@@ -31,8 +28,7 @@ def test_save_settings(test_input1, test_input2, test_input3, expected):
 def test_get_settings(test_input1, test_input2, expected):
     user_settings = UserSettingService()
     result = user_settings.get_settings(test_input1, test_input2)
-    assert result['pdf1'] == expected
-
+    assert result['Status'] == expected
 
 
 @pytest.mark.parametrize("test_input1,test_input2,expected",
@@ -41,4 +37,23 @@ def test_get_settings(test_input1, test_input2, expected):
 def test_settings_history(test_input1, test_input2, expected):
     user_settings = UserSettingService()
     result = user_settings.settings_history(test_input1, test_input2)
-    assert result['pdf1'] == expected
+    assert result['Status'] == expected
+
+
+@pytest.mark.parametrize("test_input1, expected",
+                         [("test1", "Success"),
+                          ("test2", "Success"), ("test3", "Success")])
+def test_get_settings_list(test_input1, expected):
+    user_settings = UserSettingService()
+    result = user_settings.get_settings_list(test_input1)
+    assert result['Status'] == expected
+
+
+
+@pytest.mark.parametrize("test_input1, expected",
+                         [("XYZ", "Failure"),
+                          ("XYZ!", "Failure"), ("XYZ3", "Failure")])
+def test_invalid_get_settings_list(test_input1, expected):
+    user_settings = UserSettingService()
+    result = user_settings.get_settings_list(test_input1)
+    assert result['Status'] == expected

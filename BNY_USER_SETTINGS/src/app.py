@@ -8,6 +8,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:Ugesh@1995@localh
 db = SQLAlchemy(app)
 CORS(app)
 
+
 @app.route("/")
 def start():
     return "Welcome to home page"
@@ -39,6 +40,14 @@ def settings_history():
     settings_type = request.args.get('type')
     user_service = UserSettingService()
     result = user_service.settings_history(user_id, settings_type)
+    return jsonify(result)
+
+
+@app.route('/get_settings_list', methods=['GET'])
+def get_settings_list():
+    user_id = request.args.get('user_id')
+    user_service = UserSettingService()
+    result = user_service.get_settings_list(user_id)
     return jsonify(result)
 
 
